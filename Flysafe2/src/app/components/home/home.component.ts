@@ -18,8 +18,7 @@ export class HomeComponent implements OnInit {
     });
     const self = this;
     this._electronService.ipcRenderer.on('connected', function(e, data) {
-      const string = new TextDecoder('utf-8').decode(data.content);
-      self.handleQueueConnect(string);
+      self.handleQueueConnect(data);
     });
   }
 

@@ -1,14 +1,36 @@
-<div class="container">
-    <h1 class="title">
-        {{ 'PAGES.HOME.TITLE' | translate }}
-    </h1>
-    <button (click)="playPingPong()">ping</button>
-    <button (click)="connectQueue()">connect queue</button>
+<h1 class="title">
+    {{ 'PAGES.HOME.TITLE' | translate }}
+</h1>
+<p><label>Producer state: {{producerstate}}</label>
+</p>
+<p><label>Consumer state {{consumerstate}}</label>
+</p>
+<p>
+    <textarea matInput placeholder="QueueName" [(ngModel)]="queuename"></textarea>
 
-    <button mat-button [matMenuTriggerFor]="menu">Menu</button>
-    <mat-menu #menu="matMenu">
-        <button mat-menu-item>Item 1</button>
-        <button mat-menu-item>Item 2</button>
-    </mat-menu>
-    <button mat-button color="accent">Action</button>
-</div>
+</p>
+
+<button mat-button [matMenuTriggerFor]="menu">Connection-options</button>
+<mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="ConnectProducer()">Connect Producer</button>
+    <button mat-menu-item (click)="ConnectConsumer()">Connect Consumer</button>
+</mat-menu>
+<button mat-button color="accent">Action</button>
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>Critical</mat-card-title>
+        <mat-card-subtitle>1.552919435959 -- 89.484575564646</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        Heavy storm with winds
+    </mat-card-content>
+    <mat-card-actions align="start">
+        <button mat-button color="accent">Save</button>
+        <button mat-button color="accent">Discard</button>
+        <button mat-button color="accent">Redirect</button>
+        <button mat-button color="accent">Answer</button>
+    </mat-card-actions>
+    <mat-card-footer>
+        Plane KLM One
+    </mat-card-footer>
+</mat-card>

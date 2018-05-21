@@ -9,8 +9,18 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}\\main.js",
-
-        }
+            "cwd": "${workspaceRoot}",
+    "runtimeExecutable": "npm",
+    "runtimeArgs": [
+        "run-script", "start"
+    ],
+    "port": 4200
+  },
+  {
+    "name": "Attach to Process",
+    "type": "node",
+    "request": "attach",
+    "processId": "4200"
+}
     ]
 }

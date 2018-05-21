@@ -1,9 +1,14 @@
 import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import { CompileSummaryKind } from '@angular/compiler';
+import { Consumer } from './rabbitmodules/consumer';
+import { Connector } from './rabbitmodules/connector';
+import { Producer } from './rabbitmodules/producer';
 
 const {ipcMain} = require('electron');
-let win, serve, conn, sender;
+let win, serve , sendr;
+const connector = new Connector('localhost');
 const args = process.argv.slice(1);
 serve = args.some(val => val === '--serve');
 
@@ -13,41 +18,6 @@ try {
   console.log('asar');
 }
 
-function bail(err) {
-  console.error(err);
-  process.exit(1);
-}
-
-// Publisher
-function publisher(connection) {
-  connection.createChannel(on_open);
-  function on_open(err, ch) {
-    if (err != null) { bail(err); }
-    ch.assertQueue('test');
-    ch.sendToQueue('test', new Buffer('something to do'));
-  }
-}
-
-// Consumer
-function consumer(connection) {
-  const ok = connection.createChannel(on_open);
-  function on_open(err, ch) {
-    if (err != null) { bail(err); }
-    ch.assertQueue('test');
-    ch.consume('test', function(msg) {
-      if (msg !== null) {
-        sender.send('connected', msg.content.toString());
-        ch.ack(msg);
-      }
-    });
-  }
-}
-
-require('amqplib/callback_api')
-  .connect('amqp://localhost', function(err, connection) {
-    conn = connection;
-    if (err != null) { bail(err); }
-  });
 
 function createWindow() {
 
@@ -114,10 +84,42 @@ try {
     event.sender.send('pong', 'pong');
   });
 
-  ipcMain.on('connect', (event, arg) => {
-    sender = event.sender;
-    publisher(conn);
-    consumer(conn);
+
+  ipcMain.on('connectconsumer', (event, arg) => {
+    sendr = event.sender;
+    console.log('Going to connect consumer');
+    event.sender.send('log', 'connectconsumer received with arg:' + arg);
+
+    const queuename = arg;
+    if (connector.connected) {
+      console.log('rabbitmq connection open');
+      const consumer = new Consumer(connector.connection, queuename);
+      consumer.connect().then(function(connected) {
+        console.log('consumer connected');
+        event.sender.send('consumerstate', 'connected');
+      }).catch(function(result) {
+        console.log('consumer not connected due to: ' +  result);
+        event.sender.send('consumerstate', 'disconnected');
+      });
+    }
+  });
+
+  ipcMain.on('connectproducer', (event, arg) => {
+    sendr = event.sender;
+    console.log('Going to connect producer');
+    const queuename = arg;
+    event.sender.send('log', 'connectproducer received with arg:' + arg);
+    if (connector.connected) {
+      console.log('rabbitmq connection open');
+      const producer = new Producer(connector.connection, 'queuename');
+      producer.connect().then(function(connected) {
+        console.log('producer connected');
+        event.sender.send('producerstate', 'connected');
+      }).catch(function(result) {
+        console.log('producer not connected due to: ' +  result);
+        event.sender.send('producerstate', 'disconnected');
+      });
+    }
   });
   // ipcMain.on('ping', (event, arg) => {
   //   console.log(arg); // prints "ping"

@@ -25,15 +25,16 @@ var Consumer = /** @class */ (function () {
         });
         return promise;
     };
-    Consumer.prototype.consume = function () {
+    Consumer.prototype.consume = function (callback) {
         var self = this;
         this.channel.consume(this.queue, function (msg) {
+            console.log('message consumed');
             if (msg !== null) {
                 self.channel.ack(msg);
-                return msg;
+                callback(self.queue, msg);
             }
             else {
-                return null;
+                callback(self.queue, null);
             }
         });
     };

@@ -1,5 +1,5 @@
 import { ElectronService } from './../../providers/electron.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatInput } from '@angular/material';
 
 @Component({
@@ -11,8 +11,11 @@ export class HomeComponent implements OnInit {
   queuename: string;
   producerstate: string;
   consumerstate: string;
+  consumingqueues: string[] = [];
+  producingqueues: string[] = [];
+  lastmessageresult: any;
 
-  constructor(private _electronService: ElectronService) {
+  constructor(private _electronService: ElectronService, private ref: ChangeDetectorRef) {
 
   }
 
@@ -31,20 +34,42 @@ export class HomeComponent implements OnInit {
       self.consumerstate = data;
     });
 
+    this._electronService.ipcRenderer.on('messagereceived', function(e, data) {
+      console.log('message received:' + data);
+      self.lastmessageresult = data;
+      self.ref.detectChanges();
+    });
+
+    this._electronService.ipcRenderer.on('queueconnected', function(e, data) {
+      console.log('Connection made:' + data);
+      if (data.type === 'producer') {
+        self.producerstate = 'connected';
+        self.producingqueues.push(data.queuename);
+        self.ref.detectChanges();
+      } else {
+        self.consumerstate = 'connected';
+        self.consumingqueues.push(data.queuename);
+        self.ref.detectChanges();
+      }
+    });
     this._electronService.ipcRenderer.on('log', function(e, data) {
       console.log('Server log:' + data);
     });
   }
 
-  ConnectProducer() {
-    console.log('Connecting producer to ' + this.queuename);
+  ConnectProducer(queuename) {
+    console.log('Connecting producer to ' + queuename);
 
-    this._electronService.ipcRenderer.send('connectproducer', this.queuename);
+    this._electronService.ipcRenderer.send('connectproducer', queuename);
   }
 
-  ConnectConsumer() {
-    console.log('Connecting consumer to ' + this.queuename);
+  ConnectConsumer(queuename) {
+    console.log('Connecting consumer to ' + queuename);
 
-    this._electronService.ipcRenderer.send('connectconsumer', this.queuename);
+    this._electronService.ipcRenderer.send('connectconsumer', queuename);
+  }
+
+  sendMessage(selectedqueue, message) {
+    this._electronService.ipcRenderer.send('sendmessage', {queuename: selectedqueue, message: message});
   }
 }

@@ -2,7 +2,7 @@ export class Producer {
   private channel: any;
   private connected: boolean;
 private connection: any;
-private queue: string;
+public queue: string;
   constructor(connection: any, queue: string) {
     this.connection = connection;
     this.queue = queue;

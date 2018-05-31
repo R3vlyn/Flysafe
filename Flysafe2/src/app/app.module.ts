@@ -20,7 +20,18 @@ import {
   MatMenuModule,
   MatToolbarModule,
   MatIconModule,
-  MatCardModule
+  MatCardModule,
+  MatTab,
+  MatTabsModule,
+  MatFormField,
+  MatSelect,
+  MatOption,
+  MatFormFieldModule,
+  MatSelectModule,
+  MatOptionModule,
+  MatListModule,
+  MatGridListModule,
+  MatInputModule
 } from '@angular/material';
 import { WebviewDirective } from './directives/webview.directive';
 
@@ -39,12 +50,19 @@ export function HttpLoaderFactory(http: HttpClient) {
   ],
   imports: [
     BrowserAnimationsModule,
+    MatListModule,
     NgxElectronModule,
     MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatGridListModule,
+    MatOptionModule,
+    MatSelectModule,
     MatMenuModule,
     MatToolbarModule,
     MatIconModule,
     MatCardModule,
+    MatTabsModule,
     BrowserModule,
     FormsModule,
     HttpClientModule,
@@ -59,10 +77,17 @@ export function HttpLoaderFactory(http: HttpClient) {
   ],
   exports: [
     MatButtonModule,
+    MatGridListModule,
+    MatFormFieldModule,
+    MatListModule,
+    MatSelectModule,
+    MatOptionModule,
     MatMenuModule,
     MatToolbarModule,
     MatIconModule,
-    MatCardModule
+    MatCardModule,
+    MatInputModule,
+    MatTabsModule
   ],
   providers: [ElectronService],
   bootstrap: [AppComponent]

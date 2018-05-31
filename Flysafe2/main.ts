@@ -7,6 +7,8 @@ import { Connector } from './rabbitmodules/connector';
 import { Producer } from './rabbitmodules/producer';
 
 const {ipcMain} = require('electron');
+const producers: Producer[] = [];
+const consumers: Consumer[] = [];
 let win, serve , sendr;
 const connector = new Connector('localhost');
 const args = process.argv.slice(1);
@@ -26,23 +28,28 @@ function createWindow() {
 
   // Create the browser window.
   win = new BrowserWindow({
+    webPreferences: {
+      webSecurity: false
+    },
     x: 0,
     y: 0,
     width: size.width,
     height: size.height
   });
 
-  if (serve) {
+  // if (serve) {
+    console.log('localhost load');
     require('electron-reload')(__dirname, {
      electron: require(`${__dirname}/node_modules/electron`)});
     win.loadURL('http://localhost:4200');
-  } else {
-    win.loadURL(url.format({
-      pathname: path.join(__dirname, 'dist/index.html'),
-      protocol: 'file:',
-      slashes: true
-    }));
-  }
+  // } else {
+  //   console.log('File load');
+  //   win.loadURL(url.format({
+  //     pathname: path.join(__dirname, 'dist/index.html'),
+  //     protocol: 'file:',
+  //     slashes: true
+  //   }));
+  // }
 
   win.webContents.openDevTools();
 
@@ -96,10 +103,31 @@ try {
       const consumer = new Consumer(connector.connection, queuename);
       consumer.connect().then(function(connected) {
         console.log('consumer connected');
-        event.sender.send('consumerstate', 'connected');
+        event.sender.send('queueconnected', {queuename: queuename, type: 'consumer' });
+        consumer.consume(messageReceived);
       }).catch(function(result) {
         console.log('consumer not connected due to: ' +  result);
         event.sender.send('consumerstate', 'disconnected');
+      });
+    }
+  });
+
+
+  ipcMain.on('sendmessage', (event, arg) => {
+    sendr = event.sender;
+    console.log('Send message request received, to queue: ' + arg.queuename + ', content: ' + arg.message);
+    let producer = producers.filter(element =>  element.queue === arg.queuename)[0];
+    if (producer !== undefined && producer !== null) {
+      producer.publish(arg.message);
+    } else {
+      producer = new Producer(connector.connection, arg.queuename);
+      producer.connect().then(function(connected) {
+        console.log('producer connected');
+        event.sender.send('queueconnected', {queuename: arg.queuename, type: 'producer' });
+        producer.publish(arg.message);
+      }).catch(function(result) {
+        console.log('producer not connected due to: ' +  result);
+        event.sender.send('queuedisconnected', {queuename: arg.queuename, type: 'producer' });
       });
     }
   });
@@ -111,22 +139,21 @@ try {
     event.sender.send('log', 'connectproducer received with arg:' + arg);
     if (connector.connected) {
       console.log('rabbitmq connection open');
-      const producer = new Producer(connector.connection, 'queuename');
+      const producer = new Producer(connector.connection, queuename);
       producer.connect().then(function(connected) {
         console.log('producer connected');
-        event.sender.send('producerstate', 'connected');
+        event.sender.send('queueconnected', {queuename: queuename, type: 'producer' });
       }).catch(function(result) {
         console.log('producer not connected due to: ' +  result);
         event.sender.send('producerstate', 'disconnected');
       });
     }
   });
-  // ipcMain.on('ping', (event, arg) => {
-  //   console.log(arg); // prints "ping"
-  //   event.returnValue = 'pong';
-  // });
 
 } catch (e) {
-  // Catch Error
-  // throw e;
+
+}
+
+function messageReceived(queue, msg) {
+  sendr.send('messagereceived', {queuename: queue, message: msg });
 }

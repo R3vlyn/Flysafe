@@ -1,3 +1,5 @@
+import { resolve } from 'url';
+
 export class Consumer {
   private channel: any;
   private connected: boolean;
@@ -27,14 +29,15 @@ export class Consumer {
     return promise;
   }
 
-  consume(): any {
+  consume(callback) {
     const self = this;
     this.channel.consume(this.queue, function(msg) {
+      console.log('message consumed');
       if (msg !== null) {
         self.channel.ack(msg);
-        return msg;
+        callback(self.queue, msg);
       } else {
-        return null;
+        callback(self.queue, null);
       }
     });
   }

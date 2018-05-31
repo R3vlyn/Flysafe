@@ -1,36 +1,67 @@
-<h1 class="title">
-    {{ 'PAGES.HOME.TITLE' | translate }}
-</h1>
-<p><label>Producer state: {{producerstate}}</label>
-</p>
-<p><label>Consumer state {{consumerstate}}</label>
-</p>
-<p>
-    <textarea matInput placeholder="QueueName" [(ngModel)]="queuename"></textarea>
+<mat-tab-group>
+    <mat-tab label="Connect">
+        <h1 class="title">
+            {{ 'PAGES.HOME.TITLE' | translate }}
+        </h1>
+        <p>Producer status: {{producerstate}}</p>
+        <p>Consumer status {{consumerstate}}</p>
+        <form class="example-form">
 
-</p>
+            <mat-form-field class="example-full-width">
+                <input matInput value="Queue" placeholder="queuename" #queuename>
+            </mat-form-field>
+        </form>
+        <button mat-button (click)="ConnectProducer(queuename.value)">Connect Producer</button>
+        <button mat-button (click)="ConnectConsumer(queuename.value)">Connect Consumer</button>
+        <mat-list>
 
-<button mat-button [matMenuTriggerFor]="menu">Connection-options</button>
-<mat-menu #menu="matMenu">
-    <button mat-menu-item (click)="ConnectProducer()">Connect Producer</button>
-    <button mat-menu-item (click)="ConnectConsumer()">Connect Consumer</button>
-</mat-menu>
-<button mat-button color="accent">Action</button>
-<mat-card>
-    <mat-card-header>
-        <mat-card-title>Critical</mat-card-title>
-        <mat-card-subtitle>1.552919435959 -- 89.484575564646</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-        Heavy storm with winds
-    </mat-card-content>
-    <mat-card-actions align="start">
-        <button mat-button color="accent">Save</button>
-        <button mat-button color="accent">Discard</button>
-        <button mat-button color="accent">Redirect</button>
-        <button mat-button color="accent">Answer</button>
-    </mat-card-actions>
-    <mat-card-footer>
-        Plane KLM One
-    </mat-card-footer>
-</mat-card>
+            <mat-list-item>
+                <mat-form-field>
+                    <mat-select placeholder="Targetqueue" #selectedqueue>
+                        <mat-option *ngFor="let queue of producingqueues" [value]="queue" #selectedqueue>
+                            {{queue}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <form>
+
+                    <mat-form-field>
+                        <input matInput value="Message" placeholder="message" #message>
+                    </mat-form-field>
+                </form>
+                <mat-list-item> <button mat-button (click)="sendMessage(selectedqueue.value, message.value)">send message</button></mat-list-item>
+            </mat-list-item>
+            <mat-list-item>
+                <mat-label>
+                    {{lastmessageresult}}
+                </mat-label>
+            </mat-list-item>
+        </mat-list>
+
+    </mat-tab>
+    <mat-tab label="Messages">
+        <mat-card padding class="planemessage">
+
+            <mat-card-header>
+                <mat-card-title>Critical</mat-card-title>
+                <mat-card-subtitle>1.552919435959 -- 89.484575564646</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                {{lastmessageresult}}
+            </mat-card-content>
+            <mat-card-actions align="start">
+                <button mat-button>Save</button>
+                <button mat-button>Discard</button>
+                <button mat-button>Redirect</button>
+                <button mat-button>Answer</button>
+            </mat-card-actions>
+            <mat-card-footer>
+                Plane KLM One
+            </mat-card-footer>
+        </mat-card>
+    </mat-tab>
+    <mat-tab label="Summary">
+        <h1>Some analytics</h1>
+        <p>...</p>
+    </mat-tab>
+</mat-tab-group>

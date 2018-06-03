@@ -1,5 +1,5 @@
 <mat-tab-group>
-    <mat-tab label="Connect">
+    <mat-tab label="Connection">
         <h1 class="title">
             {{ 'PAGES.HOME.TITLE' | translate }}
         </h1>
@@ -39,26 +39,48 @@
         </mat-list>
 
     </mat-tab>
-    <mat-tab label="Messages">
-        <mat-card padding class="planemessage">
+    <mat-tab label="Plane-data">
+        <button mat-raised-button *ngIf="!creatingMessage" color="primary" (click)="CreateMessage()">Create message</button>
+        <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="CancelMessage()">Cancel</button>
+        <mat-card padding *ngIf="creatingMessage">
+            <div class="example-container">
 
-            <mat-card-header>
-                <mat-card-title>Critical</mat-card-title>
-                <mat-card-subtitle>1.552919435959 -- 89.484575564646</mat-card-subtitle>
-            </mat-card-header>
+                <mat-form-field appearance="outline">
+                    <input matInput placeholder="Message">
+                    <mat-hint>Be short and effective</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <input matInput placeholder="Latitude">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <input matInput placeholder="Longitude">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <input matInput placeholder="Altitude">
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-select placeholder="Severity">
+                        <mat-option value="CRITICAL">CRITICAL</mat-option>
+                        <mat-option value="WARNING">WARNING</mat-option>
+                        <mat-option value="INFO">INFO</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="SendMessage()">Send message</button>
+        </mat-card>
+
+        <mat-card>
             <mat-card-content>
-                {{lastmessageresult}}
+                <h2>PLANE-0099</h2>
+                <p>Longitude: -15,159181515 -- Latitude: -15,159181515</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
             </mat-card-content>
             <mat-card-actions align="start">
-                <button mat-button>Save</button>
-                <button mat-button>Discard</button>
-                <button mat-button>Redirect</button>
-                <button mat-button>Answer</button>
+                <button mat-raised-button color="primary">Save</button>
+                <button mat-raised-button color="primary">Discard</button>
             </mat-card-actions>
-            <mat-card-footer>
-                Plane KLM One
-            </mat-card-footer>
         </mat-card>
+
     </mat-tab>
     <mat-tab label="Summary">
         <h1>Some analytics</h1>

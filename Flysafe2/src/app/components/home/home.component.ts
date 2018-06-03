@@ -1,6 +1,8 @@
 import { ElectronService } from './../../providers/electron.service';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { MatInput } from '@angular/material';
+import { MatInput, MatDialog } from '@angular/material';
+import { v4 as uuid } from 'uuid';
+import { ProfileDialogComponent } from '../../profile-dialog/profile-dialog.component';
 
 @Component({
   selector: 'app-home',
@@ -13,13 +15,29 @@ export class HomeComponent implements OnInit {
   consumerstate: string;
   consumingqueues: string[] = [];
   producingqueues: string[] = [];
+  receivedPlaneData: any[] = [];
+  sentDataIDs: string[] = [];
   lastmessageresult: any;
-
-  constructor(private _electronService: ElectronService, private ref: ChangeDetectorRef) {
+  planename: String = '';
+  creatingMessage: Boolean = false;
+  constructor(public dialog: MatDialog, private _electronService: ElectronService, private ref: ChangeDetectorRef) {
 
   }
 
   ngOnInit() {
+    const dialogRef = this.dialog.open(ProfileDialogComponent, {
+      height: '400px',
+      width: '600px',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      this.planename = result;
+    });
+
+    this.ConnectConsumer('planedata');
+    this.ConnectProducer('planedata');
+
     this._electronService.ipcRenderer.on('pong', function(e, data) {
       console.log('data : ' + data);
     });
@@ -35,8 +53,14 @@ export class HomeComponent implements OnInit {
     });
 
     this._electronService.ipcRenderer.on('messagereceived', function(e, data) {
-      console.log('message received:' + data);
-      self.lastmessageresult = data;
+      const message  = data.message.content.toString();
+      // const message = new TextDecoder('utf-8').decode(data.message.content);
+      if (data.queuename === 'planedata') {
+        console.log('Plane-Data received:' + message);
+        self.HandlePlaneData(message);
+      }
+      console.log('message received:' + message);
+      self.lastmessageresult = message;
       self.ref.detectChanges();
     });
 
@@ -57,6 +81,13 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  HandlePlaneData(data) {
+    const ownNotification =  (this.sentDataIDs.indexOf(data.id) > -1);
+    if (!ownNotification) {
+      this.receivedPlaneData.push(data);
+    }
+  }
+
   ConnectProducer(queuename) {
     console.log('Connecting producer to ' + queuename);
 
@@ -71,5 +102,25 @@ export class HomeComponent implements OnInit {
 
   sendMessage(selectedqueue, message) {
     this._electronService.ipcRenderer.send('sendmessage', {queuename: selectedqueue, message: message});
+  }
+
+  sendNotification(data) {
+    const id = uuid();
+    this.sentDataIDs.push(id);
+    data.id = id;
+    this.sendMessage('planedata', data);
+  }
+
+  CreateMessage(){
+    this.creatingMessage = true;
+  }
+
+  SendMessage(){
+    this.creatingMessage = false;
+  }
+
+  CancelMessage(){
+    this.creatingMessage = false;
+
   }
 }

@@ -1,0 +1,7 @@
+<p>
+    <mat-form-field appearance="outline">
+        <input matInput placeholder="Plane-name" #name>
+    </mat-form-field>
+</p>
+<p><button mat-raised-button color="primary" (click)="closeDialog(name.value)">Submit</button></p>
+<p><label *ngIf="nullname">Fill in a name</label></p>

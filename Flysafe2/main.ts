@@ -112,7 +112,6 @@ try {
     }
   });
 
-
   ipcMain.on('sendmessage', (event, arg) => {
     sendr = event.sender;
     console.log('Send message request received, to queue: ' + arg.queuename + ', content: ' + arg.message);

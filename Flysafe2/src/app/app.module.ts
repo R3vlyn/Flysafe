@@ -31,12 +31,16 @@ import {
   MatOptionModule,
   MatListModule,
   MatGridListModule,
-  MatInputModule
+  MatInputModule,
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef
 } from '@angular/material';
 import { WebviewDirective } from './directives/webview.directive';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
+import { ProfileDialogComponent } from './profile-dialog/profile-dialog.component';
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -46,10 +50,12 @@ export function HttpLoaderFactory(http: HttpClient) {
   declarations: [
     AppComponent,
     HomeComponent,
-    WebviewDirective
+    WebviewDirective,
+    ProfileDialogComponent
   ],
   imports: [
     BrowserAnimationsModule,
+    MatDialogModule,
     MatListModule,
     NgxElectronModule,
     MatButtonModule,
@@ -89,6 +95,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatInputModule,
     MatTabsModule
   ],
+  entryComponents: [ProfileDialogComponent],
   providers: [ElectronService],
   bootstrap: [AppComponent]
 })

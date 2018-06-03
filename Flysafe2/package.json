@@ -38,6 +38,7 @@
         "@angular/animations": "^5.2.0",
         "@angular/cdk": "^5.2.0",
         "@angular/material": "^5.2.0",
+        "@types/uuid": "^3.4.3",
         "amqplib": "^0.5.2",
         "ngx-electron": "^1.0.4"
     },

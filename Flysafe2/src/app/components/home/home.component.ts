@@ -111,15 +111,15 @@ export class HomeComponent implements OnInit {
     this.sendMessage('planedata', data);
   }
 
-  CreateMessage(){
+  CreateMessage() {
     this.creatingMessage = true;
   }
 
-  SendMessage(){
+  SendMessage() {
     this.creatingMessage = false;
   }
 
-  CancelMessage(){
+  CancelMessage() {
     this.creatingMessage = false;
 
   }

@@ -5,14 +5,11 @@
         </h1>
         <p>Producer status: {{producerstate}}</p>
         <p>Consumer status {{consumerstate}}</p>
-        <form class="example-form">
-
-            <mat-form-field class="example-full-width">
-                <input matInput value="Queue" placeholder="queuename" #queuename>
-            </mat-form-field>
-        </form>
-        <button mat-button (click)="ConnectProducer(queuename.value)">Connect Producer</button>
-        <button mat-button (click)="ConnectConsumer(queuename.value)">Connect Consumer</button>
+        <mat-form-field class="example-full-width">
+            <input matInput value="Queue" placeholder="queuename" #queuename>
+        </mat-form-field>
+        <button mat-raised-button (click)="ConnectProducer(queuename.value)" color="primary">Connect Producer</button>
+        <button mat-raised-button (click)="ConnectConsumer(queuename.value)" color="primary">Connect Consumer</button>
         <mat-list>
 
             <mat-list-item>
@@ -29,7 +26,7 @@
                         <input matInput value="Message" placeholder="message" #message>
                     </mat-form-field>
                 </form>
-                <mat-list-item> <button mat-button (click)="sendMessage(selectedqueue.value, message.value)">send message</button></mat-list-item>
+                <mat-list-item> <button mat-raised-button (click)="sendMessage(selectedqueue.value, message.value)" color="primary">send message</button></mat-list-item>
             </mat-list-item>
             <mat-list-item>
                 <mat-label>
@@ -69,7 +66,30 @@
             <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="SendMessage()">Send message</button>
         </mat-card>
 
-        <mat-card>
+        <mat-card class="margin borders">
+            <mat-card-content>
+                <h2>PLANE-0099</h2>
+                <p>Longitude: -15,159181515 -- Latitude: -15,159181515</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
+            </mat-card-content>
+            <mat-card-actions align="start">
+                <button mat-raised-button color="primary">Save</button>
+                <button mat-raised-button color="primary">Discard</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="margin borders">
+            <mat-card-content>
+                <h2>PLANE-0099</h2>
+                <p>Longitude: -15,159181515 -- Latitude: -15,159181515</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
+            </mat-card-content>
+            <mat-card-actions align="start">
+                <button mat-raised-button color="primary">Save</button>
+                <button mat-raised-button color="primary">Discard</button>
+            </mat-card-actions>
+        </mat-card>
+        <mat-card class="margin borders">
             <mat-card-content>
                 <h2>PLANE-0099</h2>
                 <p>Longitude: -15,159181515 -- Latitude: -15,159181515</p>

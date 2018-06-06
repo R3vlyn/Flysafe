@@ -3,6 +3,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatInput, MatDialog } from '@angular/material';
 import { v4 as uuid } from 'uuid';
 import { ProfileDialogComponent } from '../../profile-dialog/profile-dialog.component';
+import { MapsdialogComponent } from '../../mapsdialog/mapsdialog.component';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +21,8 @@ export class HomeComponent implements OnInit {
   lastmessageresult: any;
   planename: String = '';
   creatingMessage: Boolean = false;
+  messagelocation: any;
+
   constructor(public dialog: MatDialog, private _electronService: ElectronService, private ref: ChangeDetectorRef) {
 
   }
@@ -112,6 +115,16 @@ export class HomeComponent implements OnInit {
   }
 
   CreateMessage() {
+    const mapsDialogRef = this.dialog.open(MapsdialogComponent, {
+      height: '400px',
+      width: '600px',
+    });
+
+    mapsDialogRef.afterClosed().subscribe(marker => {
+      console.log('The mapsdialog was closed');
+      const location = {lat: marker.lat, long: marker.long};
+      this.messagelocation = location;
+    });
     this.creatingMessage = true;
   }
 

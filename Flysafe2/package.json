@@ -35,6 +35,7 @@
         "e2e": "npm-run-all -p -r pree2e:build pree2e:protractor"
     },
     "dependencies": {
+        "@agm/core": "^1.0.0-beta.3",
         "@angular/animations": "^5.2.0",
         "@angular/cdk": "^5.2.0",
         "@angular/material": "^5.2.0",

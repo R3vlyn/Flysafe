@@ -5,5 +5,6 @@
 
 export const CONF_DEV = {
   production: false,
-  environment: 'DEV'
+  environment: 'DEV',
+  GOOGLE_API_KEY: 'AIzaSyAeVFH-0exqQMKrLXW7QZ9xTCTNM4LqXH8'
 };

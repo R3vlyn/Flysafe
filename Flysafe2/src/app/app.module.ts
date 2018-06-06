@@ -1,3 +1,4 @@
+import { AgmCoreModule } from '@agm/core';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -41,6 +42,7 @@ import { WebviewDirective } from './directives/webview.directive';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 import { ProfileDialogComponent } from './profile-dialog/profile-dialog.component';
+import { MapsdialogComponent } from './mapsdialog/mapsdialog.component';
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -51,9 +53,13 @@ export function HttpLoaderFactory(http: HttpClient) {
     AppComponent,
     HomeComponent,
     WebviewDirective,
-    ProfileDialogComponent
+    ProfileDialogComponent,
+    MapsdialogComponent
   ],
   imports: [
+    AgmCoreModule.forRoot({
+      apiKey: 'AIzaSyAeVFH-0exqQMKrLXW7QZ9xTCTNM4LqXH8'
+    }),
     BrowserAnimationsModule,
     MatDialogModule,
     MatListModule,
@@ -95,7 +101,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatInputModule,
     MatTabsModule
   ],
-  entryComponents: [ProfileDialogComponent],
+  entryComponents: [ProfileDialogComponent, MapsdialogComponent],
   providers: [ElectronService],
   bootstrap: [AppComponent]
 })

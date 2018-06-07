@@ -114,7 +114,9 @@ try {
 
   ipcMain.on('sendmessage', (event, arg) => {
     sendr = event.sender;
-    console.log('Send message request received, to queue: ' + arg.queuename + ', content: ' + arg.message);
+    const queuename = arg.queuename;
+    const message = arg.message;
+    console.log('Send message request received, to queue: ' + queuename + ', content: ' + message);
     let producer = producers.filter(element =>  element.queue === arg.queuename)[0];
     if (producer !== undefined && producer !== null) {
       producer.publish(arg.message);
@@ -123,7 +125,8 @@ try {
       producer.connect().then(function(connected) {
         console.log('producer connected');
         event.sender.send('queueconnected', {queuename: arg.queuename, type: 'producer' });
-        producer.publish(arg.message);
+        JSON.stringify(arg.message);
+        producer.publish(JSON.stringify(arg.message));
       }).catch(function(result) {
         console.log('producer not connected due to: ' +  result);
         event.sender.send('queuedisconnected', {queuename: arg.queuename, type: 'producer' });

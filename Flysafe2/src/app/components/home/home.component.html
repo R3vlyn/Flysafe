@@ -43,64 +43,55 @@
             <div class="example-container">
 
                 <mat-form-field appearance="outline">
-                    <input matInput placeholder="Message">
+                    <input matInput [(ngModel)]="newMessage.message" placeholder="Message">
                     <mat-hint>Be short and effective</mat-hint>
                 </mat-form-field>
                 <mat-form-field appearance="outline">
-                    <input matInput placeholder="Latitude">
+                    <input matInput [(ngModel)]="newMessage.lat" placeholder="Latitude">
                 </mat-form-field>
                 <mat-form-field appearance="outline">
-                    <input matInput placeholder="Longitude">
+                    <input matInput [(ngModel)]="newMessage.lng" placeholder="Longitude">
                 </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <input matInput placeholder="Altitude">
-                </mat-form-field>
+                <mat-label>Altitude: {{newMessage.alt}}</mat-label>
+                <mat-slider [(ngModel)]="newMessage.alt" min="5000" max="60000" step="5000"></mat-slider>
                 <mat-form-field>
-                    <mat-select placeholder="Severity">
+                    <mat-select placeholder="Severity" [(ngModel)]="newMessage.severity">
                         <mat-option value="CRITICAL">CRITICAL</mat-option>
                         <mat-option value="WARNING">WARNING</mat-option>
                         <mat-option value="INFO">INFO</mat-option>
                     </mat-select>
                 </mat-form-field>
+                <mat-form-field>
+                    <mat-select placeholder="Type" [(ngModel)]="newMessage.type">
+                        <mat-option value="WIND">WIND</mat-option>
+                        <mat-option value="STORM">STORM</mat-option>
+                        <mat-option value="FROST">FROST</mat-option>
+                        <mat-option value="HEAT">HEAT</mat-option>
+                    </mat-select>
+                </mat-form-field>
             </div>
-            <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="SendMessage()">Send message</button>
+            <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="NotifyPlanes()">Send message</button>
+            <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="PickLocation()">Select another location</button>
         </mat-card>
 
-        <mat-card class="margin borders">
+        <mat-card class="margin borders" *ngFor="let data of receivedPlaneData">
             <mat-card-content>
-                <h2>PLANE-0099</h2>
-                <p>Longitude: -15,159181515 -- Latitude: -15,159181515</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
+                <h2>{{data.plane}}</h2>
+                <h3>{{data.message}}</h3>
+                <h4>{{data.type}}, {{data.severity}}</h4>
+                <mat-chip-list>
+                    <mat-chip>Longitude: {{data.lng}}</mat-chip>
+                    <mat-chip>Latitude: {{data.lat}}</mat-chip>
+                    <mat-chip>Altitude: {{data.alt}}</mat-chip>
+                </mat-chip-list>
+
+                <p>{{data.date}}</p>
             </mat-card-content>
             <mat-card-actions align="start">
                 <button mat-raised-button color="primary">Save</button>
                 <button mat-raised-button color="primary">Discard</button>
             </mat-card-actions>
         </mat-card>
-
-        <mat-card class="margin borders">
-            <mat-card-content>
-                <h2>PLANE-0099</h2>
-                <p>Longitude: -15,159181515 -- Latitude: -15,159181515</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
-            </mat-card-content>
-            <mat-card-actions align="start">
-                <button mat-raised-button color="primary">Save</button>
-                <button mat-raised-button color="primary">Discard</button>
-            </mat-card-actions>
-        </mat-card>
-        <mat-card class="margin borders">
-            <mat-card-content>
-                <h2>PLANE-0099</h2>
-                <p>Longitude: -15,159181515 -- Latitude: -15,159181515</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
-            </mat-card-content>
-            <mat-card-actions align="start">
-                <button mat-raised-button color="primary">Save</button>
-                <button mat-raised-button color="primary">Discard</button>
-            </mat-card-actions>
-        </mat-card>
-
     </mat-tab>
     <mat-tab label="Summary">
         <h1>Some analytics</h1>

@@ -11,6 +11,9 @@ import { MapsdialogComponent } from '../../mapsdialog/mapsdialog.component';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  q_planeupdates: String = 'PlaneUpdates';
+  newMessage: any = {};
+  altitude: 5000;
   queuename: string;
   producerstate: string;
   consumerstate: string;
@@ -21,7 +24,7 @@ export class HomeComponent implements OnInit {
   lastmessageresult: any;
   planename: String = '';
   creatingMessage: Boolean = false;
-  messagelocation: any;
+  messagelocation: any = {lng: '', lat: ''};
 
   constructor(public dialog: MatDialog, private _electronService: ElectronService, private ref: ChangeDetectorRef) {
 
@@ -38,8 +41,8 @@ export class HomeComponent implements OnInit {
       this.planename = result;
     });
 
-    this.ConnectConsumer('planedata');
-    this.ConnectProducer('planedata');
+    this.ConnectConsumer(this.q_planeupdates);
+    this.ConnectProducer(this.q_planeupdates);
 
     this._electronService.ipcRenderer.on('pong', function(e, data) {
       console.log('data : ' + data);
@@ -56,14 +59,12 @@ export class HomeComponent implements OnInit {
     });
 
     this._electronService.ipcRenderer.on('messagereceived', function(e, data) {
-      const message  = data.message.content.toString();
+      const planemessage = JSON.parse(data.message.content.toString());
       // const message = new TextDecoder('utf-8').decode(data.message.content);
-      if (data.queuename === 'planedata') {
-        console.log('Plane-Data received:' + message);
-        self.HandlePlaneData(message);
+      if (data.queuename === self.q_planeupdates) {
+        console.log('Plane-Data received:' + planemessage);
+        self.HandlePlaneData(planemessage);
       }
-      console.log('message received:' + message);
-      self.lastmessageresult = message;
       self.ref.detectChanges();
     });
 
@@ -85,10 +86,11 @@ export class HomeComponent implements OnInit {
   }
 
   HandlePlaneData(data) {
-    const ownNotification =  (this.sentDataIDs.indexOf(data.id) > -1);
-    if (!ownNotification) {
+    // const ownNotification =  (this.sentDataIDs.indexOf(data.id) > -1);
+    // if (!ownNotification) {
+      data.date = new Date(data.date);
       this.receivedPlaneData.push(data);
-    }
+    // }
   }
 
   ConnectProducer(queuename) {
@@ -114,6 +116,21 @@ export class HomeComponent implements OnInit {
     this.sendMessage('planedata', data);
   }
 
+  PickLocation() {
+    const mapsDialogRef = this.dialog.open(MapsdialogComponent, {
+      height: '400px',
+      width: '600px',
+    });
+
+    mapsDialogRef.afterClosed().subscribe(marker => {
+      console.log('The mapsdialog was closed');
+      this.newMessage.lat = marker.lat;
+      this.newMessage.lng = marker.lng;
+      const location = {lat: marker.lat, lng: marker.lng};
+      this.messagelocation = location;
+    });
+  }
+
   CreateMessage() {
     const mapsDialogRef = this.dialog.open(MapsdialogComponent, {
       height: '400px',
@@ -122,14 +139,21 @@ export class HomeComponent implements OnInit {
 
     mapsDialogRef.afterClosed().subscribe(marker => {
       console.log('The mapsdialog was closed');
-      const location = {lat: marker.lat, long: marker.long};
+      this.newMessage.lat = marker.lat;
+      this.newMessage.lng = marker.lng;
+      const location = {lat: marker.lat, lng: marker.lng};
       this.messagelocation = location;
     });
     this.creatingMessage = true;
   }
 
-  SendMessage() {
-    this.creatingMessage = false;
+  NotifyPlanes() {
+    const id = uuid();
+    this.sentDataIDs.push(id);
+    this.newMessage.id = id;
+    this.newMessage.plane = this.planename;
+    this.newMessage.date = new Date().getTime();
+    this._electronService.ipcRenderer.send('sendmessage', {queuename: this.q_planeupdates, message: this.newMessage});
   }
 
   CancelMessage() {

@@ -35,7 +35,9 @@ import {
   MatInputModule,
   MatDialog,
   MatDialogModule,
-  MatDialogRef
+  MatDialogRef,
+  MatSliderModule,
+  MatChipsModule
 } from '@angular/material';
 import { WebviewDirective } from './directives/webview.directive';
 
@@ -61,6 +63,8 @@ export function HttpLoaderFactory(http: HttpClient) {
       apiKey: 'AIzaSyAeVFH-0exqQMKrLXW7QZ9xTCTNM4LqXH8'
     }),
     BrowserAnimationsModule,
+    MatChipsModule,
+    MatSliderModule,
     MatDialogModule,
     MatListModule,
     NgxElectronModule,
@@ -88,7 +92,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     })
   ],
   exports: [
+    MatChipsModule,
     MatButtonModule,
+    MatSliderModule,
     MatGridListModule,
     MatFormFieldModule,
     MatListModule,

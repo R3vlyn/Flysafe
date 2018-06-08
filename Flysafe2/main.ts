@@ -9,6 +9,8 @@ import { Producer } from './rabbitmodules/producer';
 const {ipcMain} = require('electron');
 const producers: Producer[] = [];
 const consumers: Consumer[] = [];
+let subscriptionchannels: any[] = [];
+const exchanges: any[] = [];
 let win, serve , sendr;
 const connector = new Connector('localhost');
 const args = process.argv.slice(1);
@@ -41,7 +43,7 @@ function createWindow() {
     console.log('localhost load');
     require('electron-reload')(__dirname, {
      electron: require(`${__dirname}/node_modules/electron`)});
-    win.loadURL('http://localhost:4200');
+    win.loadURL('http://localhost:4201');
   // } else {
   //   console.log('File load');
   //   win.loadURL(url.format({
@@ -111,6 +113,89 @@ try {
       });
     }
   });
+
+  ipcMain.on('exchangemessage', (event, arg) => {
+    sendr = event.sender;
+    const exchangename = arg.exchange;
+    const message = arg.message;
+    const routingkey = arg.routingkey.toLowerCase();
+    const exchange = exchanges.filter(element =>  element.exchange === exchangename)[0];
+    if (exchange && exchange !== undefined && exchange !== null) {
+    exchange.channel.publish(exchangename, routingkey, new Buffer(JSON.stringify(message)));
+    sendr.send('messageExchanged', {exchange: exchange.exchange, routingkey: routingkey, message: message});
+    } else {
+      connector.connection.createChannel(function(err, ch) {
+        ch.assertExchange(exchangename, 'topic', {durable: false});
+        exchanges.push({exchange: exchangename, channel: ch});
+        sendr.send('exchangecreated', {exchange: exchangename});
+        ch.publish(exchangename, routingkey, new Buffer(JSON.stringify(message)));
+        sendr.send('messageExchanged', {exchange: exchangename, routingkey: routingkey, message: message});
+      });
+    }
+  });
+
+  ipcMain.on('createexchange', (event, arg) => {
+    sendr = event.sender;
+    const exchange = arg.exchange;
+    connector.connection.createChannel(function(err, ch) {
+      ch.assertExchange(exchange, 'topic', {durable: false});
+      exchanges.push({exchange: exchange, channel: ch});
+      sendr.send('exchangecreated', {exchange: exchange});
+    });
+  });
+
+  ipcMain.on('subscribeexchange', (event, arg) => {
+    const exchange = arg.exchange;
+    const routingkey = arg.routingkey;
+    connector.connection.createChannel(function(err, ch) {
+      ch.assertExchange(exchange, 'topic', {durable: false});
+      ch.assertQueue('', {exclusive: true}, function(err, q) {
+        ch.bindQueue(q.queue, exchange, routingkey);
+        ch.consume(q.queue, function(msg) {
+          sendr.send('exchangemessagereveived', {exchange: exchange, routingkey: routingkey, message: msg.content.toString()});
+        }, {noAck: true});
+      });
+    });
+  });
+
+  ipcMain.on('setsubscriptions', (event, arg) => {
+    subscriptionchannels.forEach((channel) => {
+      channel.close();
+    });
+    subscriptionchannels = [];
+    const settings = arg.settings;
+    Object.keys(settings.notification).forEach(function(key, index) {
+      if (settings.notification[key] === true) {
+        subscriptionchannels.push(connector.connection.createChannel(function(err, ch) {
+          ch.assertExchange('notification', 'topic', {durable: false});
+          ch.assertQueue('', {exclusive: true}, function(err, q) {
+            ch.bindQueue(q.queue, 'notification', `notification.${key.toLowerCase()}.*`);
+            ch.consume(q.queue, function(msg) {
+              sendr.send('exchangemessagereveived', {
+                exchange: 'notification',
+                routingkey: 'notification.' + key.toLowerCase(),
+                message: msg.content.toString()}); }, {noAck: true});
+          });
+        }));
+      }
+    });
+    Object.keys(settings.conclusion).forEach(function(key, index) {
+      if (settings.conclusion[key] === true) {
+        subscriptionchannels.push(connector.connection.createChannel(function(err, ch) {
+          ch.assertExchange('conclusion', 'topic', {durable: false});
+          ch.assertQueue('', {exclusive: true}, function(err, q) {
+            ch.bindQueue(q.queue, 'conclusion', `conclusion.${key.toLowerCase()}.*`);
+            ch.consume(q.queue, function(msg) {
+              sendr.send('exchangemessagereveived', {
+                exchange: 'conclusion',
+                routingkey: 'conclusion.' + key.toLowerCase(),
+                message: msg.content.toString()}); }, {noAck: true});
+          });
+        }));
+      }
+    });
+  });
+
 
   ipcMain.on('sendmessage', (event, arg) => {
     sendr = event.sender;

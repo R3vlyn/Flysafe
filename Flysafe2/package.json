@@ -19,19 +19,19 @@
     "scripts": {
         "postinstall": "npx electron-builder install-app-deps",
         "ng": "ng",
-        "start": "cross-env ELECTRON_PORT=4200 node hooks/environments/set_profile.js && npm-run-all -p ng:serve electron:serve",
+        "start": "cross-env ELECTRON_PORT=4201 node hooks/environments/set_profile.js && npm-run-all -p ng:serve electron:serve",
         "build": "node hooks/environments/set_profile.js && ng build && npm run electron:tsc",
         "build:prod": "node hooks/environments/set_profile.js && ng build --prod && npm run electron:tsc",
-        "ng:serve": "cross-env ng serve --port 4200",
+        "ng:serve": "cross-env ng serve --port 4201",
         "electron:tsc": "tsc main.ts",
-        "electron:serve": "wait-on http-get://localhost:4200/ && set BROWSER=none && npm run electron:tsc && electron --inspect=9229 . --serve",
+        "electron:serve": "wait-on http-get://localhost:4201/ && set BROWSER=none && npm run electron:tsc && electron --inspect=9229 . --serve",
         "electron:local": "npm run build:prod && set BROWSER=none&& electron .",
         "electron:linux": "npm run build:prod && npx electron-builder build --linux",
         "electron:windows": "npm run build:prod && npx electron-builder build --windows",
         "electron:mac": "npm run build:prod && npx electron-builder build --mac",
         "test": "karma start ./karma.conf.js",
         "pree2e:build": "webdriver-manager update --gecko false && npm run ng serve",
-        "pree2e:protractor": "cross-env wait-on http-get://localhost:4200/ && protractor ./protractor.conf.js",
+        "pree2e:protractor": "cross-env wait-on http-get://localhost:4201/ && protractor ./protractor.conf.js",
         "e2e": "npm-run-all -p -r pree2e:build pree2e:protractor"
     },
     "dependencies": {

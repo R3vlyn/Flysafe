@@ -1,0 +1,15 @@
+{
+  "name": "watcher",
+  "version": "1.0.0",
+  "description": "watches flysafe and returns conclusions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michiel van Eijkeren",
+  "license": "ISC",
+  "dependencies": {
+    "amqp": "^0.2.6",
+    "amqplib": "^0.5.2"
+  }
+}

@@ -1,6 +1,6 @@
 import { ElectronService } from './../../providers/electron.service';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { MatInput, MatDialog } from '@angular/material';
+import { MatInput, MatDialog, MatSnackBar } from '@angular/material';
 import { v4 as uuid } from 'uuid';
 import { ProfileDialogComponent } from '../../profile-dialog/profile-dialog.component';
 import { MapsdialogComponent } from '../../mapsdialog/mapsdialog.component';
@@ -11,6 +11,9 @@ import { MapsdialogComponent } from '../../mapsdialog/mapsdialog.component';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  start = true;
+  exchangenamenotification = 'notification';
+  exchangenameconclusion = 'conclusion';
   q_planeupdates: String = 'PlaneUpdates';
   newMessage: any = {};
   altitude: 5000;
@@ -20,13 +23,48 @@ export class HomeComponent implements OnInit {
   consumingqueues: string[] = [];
   producingqueues: string[] = [];
   receivedPlaneData: any[] = [];
+  savedPlaneData: any[] = [];
   sentDataIDs: string[] = [];
   lastmessageresult: any;
   planename: String = '';
+  settingschanged: Boolean = false;
   creatingMessage: Boolean = false;
   messagelocation: any = {lng: '', lat: ''};
+  settingstemporary: any = {
+    notification: {
+      heat: true,
+      storm: true,
+      wind: true,
+      frost: true,
+      other: true
+    },
+    conclusion: {
+      heat: true,
+      storm: true,
+      wind: true,
+      frost: true,
+      other: true
+    }
+  };
+  settingssaved: any = {
+    notification: {
+      heat: true,
+      storm: true,
+      wind: true,
+      frost: true,
+      other: true
+    },
+    conclusion: {
+      heat: true,
+      storm: true,
+      wind: true,
+      frost: true,
+      other: true
+    }
+  };
 
-  constructor(public dialog: MatDialog, private _electronService: ElectronService, private ref: ChangeDetectorRef) {
+  constructor(public dialog: MatDialog, private _electronService: ElectronService,
+    private ref: ChangeDetectorRef, public snackBar: MatSnackBar) {
 
   }
 
@@ -83,6 +121,22 @@ export class HomeComponent implements OnInit {
     this._electronService.ipcRenderer.on('log', function(e, data) {
       console.log('Server log:' + data);
     });
+
+    // exchange- subscribtion
+    this._electronService.ipcRenderer.on('exchangecreated', function(e, data) {
+      console.log(data.exchange);
+    });
+
+    this._electronService.ipcRenderer.on('exchangemessagereveived', function(e, data) {
+      console.log(`Message received: ${data.exchange}, ${data.routingkey}, ${data.message}`);
+      self.HandlePlaneData(JSON.parse(data.message));
+      self.ref.detectChanges();
+    });
+
+    this._electronService.ipcRenderer.on('messageExchanged', function(e, data) {
+      console.log(`Message send: ${data.exchange}, ${data.routingkey}, ${data.message}`);
+    });
+
   }
 
   HandlePlaneData(data) {
@@ -90,6 +144,11 @@ export class HomeComponent implements OnInit {
     // if (!ownNotification) {
       data.date = new Date(data.date);
       this.receivedPlaneData.push(data);
+      this.receivedPlaneData.sort(function(a, b) {
+        return b.date - a.date;
+      });
+      this.openSnackBar('New message reveived', 'OK');
+
     // }
   }
 
@@ -158,6 +217,91 @@ export class HomeComponent implements OnInit {
 
   CancelMessage() {
     this.creatingMessage = false;
+  }
 
+  CreateExchange() {
+    this._electronService.ipcRenderer.send('createexchange', {exchange: this.exchangenamenotification});
+  }
+
+  SubscribeExchange() {
+    this._electronService.ipcRenderer.send('subscribeexchange', {exchange: this.exchangenamenotification, routingkey: 'notification.*.*'});
+  }
+
+  ExchangeTestmessage() {
+
+    this._electronService.ipcRenderer.send(
+      'exchangemessage', {exchange: this.exchangenamenotification, routingkey: 'notification.wind.critical', message: 'test'});
+  }
+
+  ExchangeMessage() {
+    const id = uuid();
+    this.sentDataIDs.push(id);
+    this.newMessage.id = id;
+    this.newMessage.plane = this.planename;
+    this.newMessage.date = new Date().getTime();
+    this._electronService.ipcRenderer.send(
+      'exchangemessage', {
+        exchange: this.exchangenamenotification,
+        routingkey: `notification.${this.newMessage.type}.${this.newMessage.severity}`,
+        message: this.newMessage});
+    //this.newMessage = {};
+    this.creatingMessage = false;
+    this.openSnackBar('Message sent!', 'OK');
+
+  }
+
+  SaveSettings() {
+    this.settingssaved = JSON.parse(JSON.stringify(this.settingstemporary));
+    this.SetSubscriptions();
+    this.openSnackBar('Settings saved!', 'Noticed');
+  }
+
+  SubmitSubscriptions() {
+    this.settingssaved = JSON.parse(JSON.stringify(this.settingstemporary));
+    this.SetSubscriptions();
+    this.start = false;
+    this.openSnackBar('Subscriptions submitted!', 'Noticed');
+  }
+
+  SetSubscriptions() {
+    this._electronService.ipcRenderer.send('setsubscriptions', {settings: this.settingssaved});
+  }
+
+  SettingsChanged(): boolean{
+    return JSON.stringify(this.settingstemporary) !== JSON.stringify(this.settingssaved);
+  }
+
+  CancelSettingChanges() {
+    this.settingstemporary = JSON.parse(JSON.stringify(this.settingssaved));
+    this.openSnackBar('Changes reverted!', 'Noticed');
+  }
+
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 2000,
+    });
+  }
+
+  SaveMessage(message) {
+    this.savedPlaneData.push(message);
+    this.receivedPlaneData = this.receivedPlaneData.filter(function( obj ) {
+      return obj.id !== message.id;
+    });
+    this.ref.detectChanges();
+    this.openSnackBar('Message saved', 'OK');
+  }
+  DiscardMessage(message) {
+    this.receivedPlaneData = this.receivedPlaneData.filter(function( obj ) {
+      return obj.id !== message.id;
+    });
+    this.ref.detectChanges();
+  }
+
+  DiscardSavedMessage(message) {
+    this.savedPlaneData = this.savedPlaneData.filter(function( obj ) {
+      return obj.id !== message.id;
+    });
+    this.ref.detectChanges();
+    this.openSnackBar('Message discarded', 'OK');
   }
 }

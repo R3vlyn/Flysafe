@@ -1,4 +1,125 @@
 <mat-tab-group>
+    <mat-tab label="Settings">
+        <h3 *ngIf="start">Select the data you would like to receive</h3>
+        <mat-card padding>
+            <h1>Notifications</h1>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.notification.heat">HEAT</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.notification.storm">STORM</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.notification.wind">WIND</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.notification.frost">FROST</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.notification.other">OTHER</mat-checkbox>
+            </p>
+        </mat-card>
+        <mat-card padding>
+
+            <h1>Conclusions</h1>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.conclusion.heat">HEAT</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.conclusion.storm">STORM</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.conclusion.wind">WIND</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.conclusion.frost">FROST</mat-checkbox>
+            </p>
+            <p>
+                <mat-checkbox [(ngModel)]="settingstemporary.conclusion.other">OTHER</mat-checkbox>
+            </p>
+        </mat-card>
+        <button mat-raised-button *ngIf="(SettingsChanged() && !start)" (click)="SaveSettings()" color="primary">Save</button>
+        <button mat-raised-button *ngIf="(SettingsChanged() && !start)" (click)="CancelSettingChanges()" color="primary">Cancel</button>
+        <button mat-raised-button *ngIf="start" (click)="SubmitSubscriptions()" color="primary">Submit</button>
+    </mat-tab>
+    <mat-tab label="Send message">
+        <button mat-raised-button color="primary" (click)="PickLocation()">Select a location</button>
+        <mat-card padding>
+            <div class="example-container">
+
+                <mat-form-field appearance="outline">
+                    <input matInput [(ngModel)]="newMessage.message" placeholder="Message">
+                    <mat-hint>Be short and effective</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <input matInput [(ngModel)]="newMessage.lat" placeholder="Latitude">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <input matInput [(ngModel)]="newMessage.lng" placeholder="Longitude">
+                </mat-form-field>
+                <mat-label>Altitude: {{newMessage.alt}} feet</mat-label>
+                <mat-slider [(ngModel)]="newMessage.alt" min="5000" max="60000" step="5000"></mat-slider>
+                <mat-form-field>
+                    <mat-select placeholder="Severity" [(ngModel)]="newMessage.severity">
+                        <mat-option value="CRITICAL">CRITICAL</mat-option>
+                        <mat-option value="WARNING">WARNING</mat-option>
+                        <mat-option value="INFO">INFO</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-select placeholder="Type" [(ngModel)]="newMessage.type">
+                        <mat-option value="WIND">WIND</mat-option>
+                        <mat-option value="STORM">STORM</mat-option>
+                        <mat-option value="FROST">FROST</mat-option>
+                        <mat-option value="HEAT">HEAT</mat-option>
+                        <mat-option value="OTHER">OTHER</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <button mat-raised-button color="primary" (click)="ExchangeMessage()">Send message</button>
+        </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Inbox">
+        <mat-card class="margin borders" *ngFor="let data of receivedPlaneData">
+            <mat-card-content>
+                <h2>{{data.plane}}</h2>
+                <h3>{{data.message}}</h3>
+                <h4>{{data.type}}, {{data.severity}}</h4>
+                <mat-chip-list>
+                    <mat-chip>Longitude: {{data.lng}}</mat-chip>
+                    <mat-chip>Latitude: {{data.lat}}</mat-chip>
+                    <mat-chip>Altitude: {{data.alt}}</mat-chip>
+                </mat-chip-list>
+
+                <p>{{data.date}}</p>
+            </mat-card-content>
+            <mat-card-actions align="start">
+                <button mat-raised-button color="primary" (click)="SaveMessage(data)">Save</button>
+                <button mat-raised-button color="primary" (click)="DiscardMessage(data)">Discard</button>
+            </mat-card-actions>
+        </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Saved messages">
+        <mat-card class="margin borders" *ngFor="let data of savedPlaneData">
+            <mat-card-content>
+                <h2>{{data.plane}}</h2>
+                <h3>{{data.message}}</h3>
+                <h4>{{data.type}}, {{data.severity}}</h4>
+                <mat-chip-list>
+                    <mat-chip>Longitude: {{data.lng}}</mat-chip>
+                    <mat-chip>Latitude: {{data.lat}}</mat-chip>
+                    <mat-chip>Altitude: {{data.alt}}</mat-chip>
+                </mat-chip-list>
+
+                <p>{{data.date}}</p>
+            </mat-card-content>
+            <mat-card-actions align="start">
+                <button mat-raised-button color="primary" (click)="DiscardSavedMessage(data)">Discard</button>
+            </mat-card-actions>
+        </mat-card>
+    </mat-tab>
     <mat-tab label="Connection">
         <h1 class="title">
             {{ 'PAGES.HOME.TITLE' | translate }}
@@ -36,65 +157,10 @@
         </mat-list>
 
     </mat-tab>
-    <mat-tab label="Plane-data">
-        <button mat-raised-button *ngIf="!creatingMessage" color="primary" (click)="CreateMessage()">Create message</button>
-        <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="CancelMessage()">Cancel</button>
-        <mat-card padding *ngIf="creatingMessage">
-            <div class="example-container">
-
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="newMessage.message" placeholder="Message">
-                    <mat-hint>Be short and effective</mat-hint>
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="newMessage.lat" placeholder="Latitude">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="newMessage.lng" placeholder="Longitude">
-                </mat-form-field>
-                <mat-label>Altitude: {{newMessage.alt}}</mat-label>
-                <mat-slider [(ngModel)]="newMessage.alt" min="5000" max="60000" step="5000"></mat-slider>
-                <mat-form-field>
-                    <mat-select placeholder="Severity" [(ngModel)]="newMessage.severity">
-                        <mat-option value="CRITICAL">CRITICAL</mat-option>
-                        <mat-option value="WARNING">WARNING</mat-option>
-                        <mat-option value="INFO">INFO</mat-option>
-                    </mat-select>
-                </mat-form-field>
-                <mat-form-field>
-                    <mat-select placeholder="Type" [(ngModel)]="newMessage.type">
-                        <mat-option value="WIND">WIND</mat-option>
-                        <mat-option value="STORM">STORM</mat-option>
-                        <mat-option value="FROST">FROST</mat-option>
-                        <mat-option value="HEAT">HEAT</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="NotifyPlanes()">Send message</button>
-            <button mat-raised-button *ngIf="creatingMessage" color="primary" (click)="PickLocation()">Select another location</button>
-        </mat-card>
-
-        <mat-card class="margin borders" *ngFor="let data of receivedPlaneData">
-            <mat-card-content>
-                <h2>{{data.plane}}</h2>
-                <h3>{{data.message}}</h3>
-                <h4>{{data.type}}, {{data.severity}}</h4>
-                <mat-chip-list>
-                    <mat-chip>Longitude: {{data.lng}}</mat-chip>
-                    <mat-chip>Latitude: {{data.lat}}</mat-chip>
-                    <mat-chip>Altitude: {{data.alt}}</mat-chip>
-                </mat-chip-list>
-
-                <p>{{data.date}}</p>
-            </mat-card-content>
-            <mat-card-actions align="start">
-                <button mat-raised-button color="primary">Save</button>
-                <button mat-raised-button color="primary">Discard</button>
-            </mat-card-actions>
-        </mat-card>
+    <mat-tab label="Topictest">
+        <button mat-raised-button (click)="CreateExchange()" color="primary">Create exchange</button>
+        <button mat-raised-button (click)="SubscribeExchange()" color="primary">Subscribe to exchange</button>
+        <button mat-raised-button (click)="ExchangeTestmessage()" color="primary">Exchange testmessage</button>
     </mat-tab>
-    <mat-tab label="Summary">
-        <h1>Some analytics</h1>
-        <p>...</p>
-    </mat-tab>
+
 </mat-tab-group>
